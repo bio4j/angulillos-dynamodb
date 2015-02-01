@@ -7,32 +7,16 @@ import com.google.common.base.Preconditions;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 public class DynamoDbItem {
 
-    private static final Map<Class<?>, AttributeValueCreator<? extends Object>> attributeValueCreators = new HashMap<>();
+    private static final Map<Class<?>, Function<? extends Object,AttributeValue>> attributeValueCreators = new HashMap<>();
 
     static{
-        attributeValueCreators.put(String.class, new AttributeValueCreator<String>() {
-            @Override
-            public AttributeValue create(String value) {
-                return new AttributeValue().withS(value);
-            }
-        });
-
-        attributeValueCreators.put(Long.class, new AttributeValueCreator<Long>() {
-            @Override
-            public AttributeValue create(Long value) {
-                return new AttributeValue().withN(value.toString());
-            }
-        });
-
-        attributeValueCreators.put(Double.class, new AttributeValueCreator<Double>() {
-            @Override
-            public AttributeValue create(Double value) {
-                return new AttributeValue().withN(value.toString());
-            }
-        });
+        attributeValueCreators.put(String.class, (String value) -> new AttributeValue().withS(value));
+        attributeValueCreators.put(Long.class, (Long value) -> new AttributeValue().withN(value.toString()));
+        attributeValueCreators.put(Double.class, (Double value) -> new AttributeValue().withN(value.toString()));
     }
 
     private  Map<String,AttributeValue> attributes;
@@ -51,9 +35,9 @@ public class DynamoDbItem {
     }
 
     public <V extends Object> void setAttribute(String name, V value){
-        AttributeValueCreator<V> creator = (AttributeValueCreator<V>)Preconditions.
-                checkNotNull(attributeValueCreators.get(value.getClass()),"Given type is not yet supported");
-        attributes.put(name,creator.create(value));
+        Function<V, AttributeValue> attributeValueFunction = ((Function<V, AttributeValue>)Preconditions.
+                checkNotNull(attributeValueCreators.get(value.getClass()), "Given type is not yet supported"));
+        attributes.put(name,attributeValueFunction.apply(value));
     }
 
 }
