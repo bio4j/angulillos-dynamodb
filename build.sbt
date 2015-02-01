@@ -12,7 +12,8 @@ bucketSuffix := "era7.com"
 
 libraryDependencies ++= Seq(
   "com.amazonaws" % "aws-java-sdk" % "1.9.16",
-  "bio4j" % "angulillos" % "0.4.1"
+  "bio4j" % "angulillos" % "0.4.1",
+  "com.google.guava" % "guava" % "18.0"
 )
 
 dependencyOverrides ++= Set(
